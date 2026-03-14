@@ -7,22 +7,10 @@
 
 import SwiftUI
 
-struct ColorTab {
-    let title: String
-    let color: Color
-}
-
-// MARK: - Page Color Environment
-
-private struct PageColorKey: EnvironmentKey {
-    static let defaultValue: Color = .accentColor
-}
+struct ColorTab { let title: String; let color: Color }
 
 extension EnvironmentValues {
-    var pageColor: Color {
-        get { self[PageColorKey.self] }
-        set { self[PageColorKey.self] = newValue }
-    }
+    @Entry var widgetColor: Color = .accentColor
 }
 
 // MARK: - Root
@@ -30,135 +18,75 @@ extension EnvironmentValues {
 struct ContentView: View {
     var body: some View {
         TabView {
-            Tab("", systemImage: "house") {
-                HomeView()
-            }
+            Tab("", systemImage: "house") { HomeView() }
             Tab("", systemImage: "plus.circle") {
-                PlusView()
+                NavigationStack {
+                    ScrollView {}.navigationTitle("Menu")
+                }
             }
             Tab("", systemImage: "book") {
-                JournalView()
-            }
-        }
-    }
-}
-
-// MARK: - Plus
-
-struct PlusView: View {
-    var body: some View {
-        NavigationStack {
-            ScrollView {}
-                .navigationTitle("New")
-                .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
-// MARK: - Journal
-
-struct JournalView: View {
-    var body: some View {
-        NavigationStack {
-            JournalContent()
-                .navigationTitle("Journal")
-        }
-    }
-}
-
-// MARK: - Info Sheet
-
-struct InfoSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                InfoContent()
-            }
-            .environment(\.pageColor, .indigo)
-            .navigationTitle("Info")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .fontWeight(.semibold)
-                    }
+                NavigationStack {
+                    JournalContent().refreshable {}.navigationTitle("Journal")
                 }
             }
         }
-        .presentationBackground(Color.indigo.opacity(0.12))
     }
 }
 
 // MARK: - Swipeable Page View
 
-struct SwipePageView<PageContent: View>: View {
+struct SwipePageView<Content: View>: View {
     let pages: [ColorTab]
-    let pageContent: (Int) -> PageContent
-
-    init(pages: [ColorTab], @ViewBuilder pageContent: @escaping (Int) -> PageContent) {
+    let content: (Int) -> Content
+    
+    init(pages: [ColorTab], @ViewBuilder content: @escaping (Int) -> Content) {
         self.pages = pages
-        self.pageContent = pageContent
+        self.content = content
     }
-
-    @State private var selectedIndex: Int? = 0
-    @Namespace private var tabNamespace
-
+    
+    @State private var selected: Int? = 0
+    @Namespace private var indicator
+    
     var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 0) {
                 ForEach(pages.indices, id: \.self) { i in
                     ScrollView {
-                        pageContent(i)
+                        content(i)
                     }
+                    .refreshable {}
                     .containerRelativeFrame(.horizontal)
-                    .environment(\.pageColor, pages[i].color)
+                    .environment(\.widgetColor, pages[i].color)
                     .id(i)
                 }
             }
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.paging)
-        .scrollPosition(id: $selectedIndex)
+        .scrollPosition(id: $selected)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .top, spacing: 0) {
-            tabBar
-        }
-        .ignoresSafeArea(edges: .bottom)
-    }
-
-    private var tabBar: some View {
-        HStack(spacing: 0) {
-            ForEach(pages.indices, id: \.self) { i in
-                Button {
-                    withAnimation { selectedIndex = i }
-                } label: {
-                    VStack(spacing: 4) {
+            HStack(spacing: 0) {
+                ForEach(pages.indices, id: \.self) { i in
+                    Button { withAnimation { selected = i } } label: {
                         Text(pages[i].title)
-                            .font(.system(size: 15, weight: selectedIndex == i ? .semibold : .regular))
-                            .foregroundColor(selectedIndex == i ? pages[i].color : .secondary)
+                            .foregroundStyle(selected == i ? .primary : .secondary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-
-                        if selectedIndex == i {
-                            pages[i].color
-                                .frame(height: 3)
-                                .clipShape(Capsule())
-                                .matchedGeometryEffect(id: "indicator", in: tabNamespace)
-                        } else {
-                            Color.clear.frame(height: 3)
-                        }
+                            .overlay(alignment: .bottom) {
+                                if selected == i {
+                                    Color.primary.frame(height: 2).clipShape(Capsule())
+                                        .matchedGeometryEffect(id: "tab", in: indicator)
+                                }
+                            }
                     }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .background(.ultraThinMaterial)
+            .overlay(alignment: .bottom) { Divider() }
         }
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .bottom) { Divider() }
+        .ignoresSafeArea(edges: .bottom)
     }
 }
 
@@ -166,16 +94,14 @@ struct SwipePageView<PageContent: View>: View {
 
 struct HomeView: View {
     @State private var navigateToHeart = false
-
-    private let pages: [ColorTab] = [
-        ColorTab(title: "Health",  color: .red),
-        ColorTab(title: "Insight", color: .purple),
-        ColorTab(title: "Food",    color: .teal)
-    ]
-
+    
     var body: some View {
         NavigationStack {
-            SwipePageView(pages: pages) { i in
+            SwipePageView(pages: [
+                ColorTab(title: "Health",  color: .red),
+                ColorTab(title: "Insight", color: .purple),
+                ColorTab(title: "Food",    color: .teal)
+            ]) { i in
                 switch i {
                 case 0:  HealthContent(onTap: { navigateToHeart = true })
                 case 1:  InsightContent()
@@ -184,26 +110,22 @@ struct HomeView: View {
             }
             .navigationTitle("Health")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(isPresented: $navigateToHeart) {
-                TabsView()
-            }
+            .navigationDestination(isPresented: $navigateToHeart) { TabsView() }
         }
     }
 }
 
-// MARK: - Tabs (Heart)
+// MARK: - Heart
 
 struct TabsView: View {
     @State private var showInfo = false
-
-    private let pages: [ColorTab] = [
-        ColorTab(title: "Heart",   color: .pink),
-        ColorTab(title: "Data",    color: .indigo),
-        ColorTab(title: "Summary", color: .mint)
-    ]
-
+    
     var body: some View {
-        SwipePageView(pages: pages) { i in
+        SwipePageView(pages: [
+            ColorTab(title: "Heart",   color: .pink),
+            ColorTab(title: "Data",    color: .indigo),
+            ColorTab(title: "Summary", color: .mint)
+        ]) { i in
             switch i {
             case 0:  HeartRateContent()
             case 1:  OxygenContent()
@@ -214,15 +136,31 @@ struct TabsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showInfo = true } label: {
-                    Image(systemName: "info.circle")
-                }
+                Button { showInfo = true } label: { Image(systemName: "info.circle") }
             }
         }
         .sheet(isPresented: $showInfo) { InfoSheet() }
     }
 }
 
-#Preview {
-    ContentView()
+// MARK: - Heart Info Sheet
+
+struct InfoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView { InfoContent() }
+                .environment(\.widgetColor, .indigo)
+                .navigationTitle("Info")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { dismiss() } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+                }
+        }
+    }
 }

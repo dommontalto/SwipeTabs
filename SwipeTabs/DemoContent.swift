@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - Shared
 
 private struct StatCard: View {
-    @Environment(\.pageColor) private var pageColor
+    @Environment(\.widgetColor) private var widgetColor
 
     let icon: String
     let title: String
@@ -37,7 +37,7 @@ private struct StatCard: View {
             Spacer()
         }
         .padding()
-        .background(pageColor)
+        .background(widgetColor)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
