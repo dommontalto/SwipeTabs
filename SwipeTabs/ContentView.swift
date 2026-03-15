@@ -45,8 +45,8 @@ struct SwipePageView<Content: View>: View {
     }
     
     @State private var selected: Int? = 0
-    @Namespace private var indicator
-    
+    @State private var scrollOffset: CGFloat = 0
+
     var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 0) {
@@ -65,6 +65,9 @@ struct SwipePageView<Content: View>: View {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $selected)
         .scrollIndicators(.hidden)
+        .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, new in
+            scrollOffset = new
+        }
         .safeAreaInset(edge: .top, spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(pages.indices, id: \.self) { i in
@@ -73,15 +76,19 @@ struct SwipePageView<Content: View>: View {
                             .foregroundStyle(selected == i ? .primary : .secondary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .overlay(alignment: .bottom) {
-                                if selected == i {
-                                    Color.primary.frame(height: 2).clipShape(Capsule())
-                                        .matchedGeometryEffect(id: "tab", in: indicator)
-                                }
-                            }
                     }
                     .buttonStyle(.plain)
                 }
+            }
+            .overlay(alignment: .bottomLeading) {
+                GeometryReader { geo in
+                    let tabWidth = geo.size.width / CGFloat(pages.count)
+                    Color.primary
+                        .frame(width: tabWidth, height: 2)
+                        .clipShape(Capsule())
+                        .offset(x: scrollOffset / CGFloat(pages.count))
+                }
+                .frame(height: 2)
             }
             .background(.ultraThinMaterial)
             .overlay(alignment: .bottom) { Divider() }

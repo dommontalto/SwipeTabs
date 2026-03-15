@@ -1,9 +1,2 @@
-SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad/UserInterfaceState.xcuserstate
-SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad/UserInterfaceState.xcuserstate
-SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad/UserInterfaceState.xcuserstate
-SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad/UserInterfaceState.xcuserstate
-/SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad
-/SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata
-/SwipeTabs.xcodeproj/project.xcworkspace
-*.xcuserstate
-SwipeTabs.xcodeproj/project.xcworkspace/xcuserdata/dommontalto.xcuserdatad/UserInterfaceState.xcuserstate
+**/xcuserdata/
+.DS_Store
