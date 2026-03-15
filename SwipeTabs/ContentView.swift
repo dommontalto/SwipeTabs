@@ -61,10 +61,12 @@ struct MenuSheet: View {
 
 struct SwipePageView<Content: View>: View {
     let pages: [ColorTab]
+    let hasTitle: Bool
     let content: (Int) -> Content
-    
-    init(pages: [ColorTab], @ViewBuilder content: @escaping (Int) -> Content) {
+
+    init(pages: [ColorTab], hasTitle: Bool = true, @ViewBuilder content: @escaping (Int) -> Content) {
         self.pages = pages
+        self.hasTitle = hasTitle
         self.content = content
     }
     
@@ -91,6 +93,7 @@ struct SwipePageView<Content: View>: View {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $selected)
         .scrollIndicators(.hidden)
+        .sensoryFeedback(.impact(), trigger: selected)
         .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, new in
             scrollOffset = new
         }
@@ -132,6 +135,7 @@ struct SwipePageView<Content: View>: View {
                     .frame(height: 2)
                 }
                 .padding(.horizontal, 90)
+                .padding(.top, hasTitle ? 0 : 20)
                 Divider()
             }
             .background(.ultraThinMaterial)
@@ -152,14 +156,13 @@ struct HomeView: View {
                 ColorTab(title: "Health",  color: .red),
                 ColorTab(title: "Insight", color: .purple),
                 ColorTab(title: "Food",    color: .teal)
-            ]) { i in
+            ], hasTitle: false) { i in
                 switch i {
                 case 0:  HealthContent(onTap: { navigateToHeart = true })
                 case 1:  InsightContent()
                 default: FoodContent()
                 }
             }
-            .navigationTitle("Health")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $navigateToHeart) { TabsView() }
         }
