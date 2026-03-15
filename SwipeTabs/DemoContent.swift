@@ -132,15 +132,49 @@ struct OxygenContent: View {
 // MARK: - Heart · Summary tab
 
 struct HRVContent: View {
+    @State private var tab = 0
+
     var body: some View {
-        VStack(spacing: 12) {
-            StatCard(icon: "waveform.path.ecg.rectangle.fill", title: "HRV",             value: "54 ms", subtitle: "Above baseline · Good")
-            StatCard(icon: "chart.bar.fill",                   title: "7-Day HRV Avg",   value: "49 ms", subtitle: "Trending up")
-            StatCard(icon: "brain.head.profile",               title: "Stress Score",    value: "Low",   subtitle: "Based on HRV & activity")
-            StatCard(icon: "figure.yoga",                      title: "Recovery",        value: "87%",   subtitle: "Well recovered")
-            StatCard(icon: "timer",                            title: "Parasympathetic", value: "High",  subtitle: "Resting state dominant")
+        VStack(spacing: 0) {
+            Picker("", selection: $tab) {
+                Text("Heart").tag(0)
+                Text("Sleep").tag(1)
+                Text("Exercise").tag(2)
+            }
+            .pickerStyle(.segmented)
+            .padding()
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    switch tab {
+                    case 0:
+                        StatCard(icon: "waveform.path.ecg.rectangle.fill", title: "HRV",             value: "54 ms", subtitle: "Above baseline · Good")
+                        StatCard(icon: "chart.bar.fill",                   title: "7-Day HRV Avg",   value: "49 ms", subtitle: "Trending up")
+                        StatCard(icon: "brain.head.profile",               title: "Stress Score",    value: "Low",   subtitle: "Based on HRV & activity")
+                        StatCard(icon: "figure.yoga",                      title: "Recovery",        value: "87%",   subtitle: "Well recovered")
+                        StatCard(icon: "timer",                            title: "Parasympathetic", value: "High",  subtitle: "Resting state dominant")
+                    case 1:
+                        StatCard(icon: "chart.xyaxis.line",                  title: "30-Day HRV",      value: "51 ms",   subtitle: "↑ 6% from last month")
+                        StatCard(icon: "heart.text.square.fill",             title: "Avg Resting HR",  value: "64 bpm",  subtitle: "Down 3 bpm this month")
+                        StatCard(icon: "lungs.fill",                         title: "Avg SpO₂",        value: "97.4%",   subtitle: "Stable over 30 days")
+                        StatCard(icon: "gauge.with.dots.needle.67percent",   title: "VO₂ Max Trend",   value: "↑ 47.3",  subtitle: "Improved from 45.1")
+                        StatCard(icon: "bed.double.fill",                    title: "Sleep Quality",   value: "7h 18m",  subtitle: "30-day avg · Good")
+                        StatCard(icon: "figure.run",                         title: "Active Days",     value: "22 / 30", subtitle: "This month")
+                    default:
+                        StatCard(icon: "bolt.heart.fill",  title: "Readiness",      value: "84 / 100", subtitle: "High · Great day to train")
+                        StatCard(icon: "figure.yoga",      title: "Recovery Status", value: "Well",     subtitle: "87% · Fully recovered")
+                        StatCard(icon: "brain.head.profile", title: "Stress Load",  value: "Low",      subtitle: "Parasympathetic dominant")
+                        StatCard(icon: "flame.fill",        title: "Training Load",  value: "Moderate", subtitle: "Within optimal range")
+                        StatCard(icon: "moon.zzz.fill",     title: "Sleep Debt",     value: "0h 12m",   subtitle: "Nearly fully paid off")
+                        StatCard(icon: "arrow.trianglehead.counterclockwise.rotate.90", title: "Next Recovery", value: "Tomorrow", subtitle: "Light activity recommended")
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+                .animation(.easeInOut(duration: 0.2), value: tab)
+            }
         }
-        .padding()
+        .containerRelativeFrame([.horizontal, .vertical])
     }
 }
 
