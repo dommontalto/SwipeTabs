@@ -128,7 +128,7 @@ struct SwipePageView<Content: View>: View {
                         let rightCenter = tabCellWidth * CGFloat(leftIdx + 1) + tabCellWidth / 2
                         let centerX = leftCenter + (rightCenter - leftCenter) * fraction
                         Color.primary
-                            .frame(width: indicatorWidth, height: 2)
+                            .frame(width: indicatorWidth, height: 1.5)
                             .clipShape(Capsule())
                             .offset(x: centerX - indicatorWidth / 2)
                     }
