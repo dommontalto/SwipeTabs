@@ -30,13 +30,10 @@ struct ContentView: View {
                 }
             }
             
-            HStack(spacing: 0) {
-                Color.clear
-                Button { showMenu = true } label: { Color.clear }
-                Color.clear
-            }
-            .frame(height: 83)
+            Button { showMenu = true } label: { Color.clear }
+                .frame(width: 60, height: 83)
         }
+        .tint(.primary)
         .sheet(isPresented: $showMenu) { MenuSheet() }
     }
 }
@@ -110,7 +107,7 @@ struct SwipePageView<Content: View>: View {
                                 .foregroundStyle(selected == i ? .primary : .secondary)
                                 .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { textWidths[i] = $0 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
+                                .padding(.bottom, 6)
                         }
                         .buttonStyle(.plain)
                     }
@@ -190,7 +187,7 @@ struct TabsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showInfo = true } label: { Image(systemName: "info.circle") }
+                Button { showInfo = true } label: { Image(systemName: "info") }
             }
         }
         .sheet(isPresented: $showInfo) { InfoSheet() }
