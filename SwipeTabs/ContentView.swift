@@ -73,6 +73,8 @@ struct SwipePageView<Content: View>: View {
     
     @State private var selected: Int? = 0
     @State private var scrollOffset: CGFloat = 0
+    @State private var containerWidth: CGFloat = 1
+    @State private var textWidths: [Int: CGFloat] = [:]
     
     var body: some View {
         ScrollView(.horizontal) {
@@ -95,33 +97,51 @@ struct SwipePageView<Content: View>: View {
         .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, new in
             scrollOffset = new
         }
+        .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, new in
+            containerWidth = new
+        }
         .safeAreaInset(edge: .top, spacing: 0) {
-            HStack(spacing: 0) {
-                ForEach(pages.indices, id: \.self) { i in
-                    Button { withAnimation { selected = i } } label: {
-                        Text(pages[i].title)
-                            .foregroundStyle(selected == i ? .primary : .secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    ForEach(pages.indices, id: \.self) { i in
+                        Button { withAnimation { selected = i } } label: {
+                            Text(pages[i].title)
+                                .font(.body)
+                                .foregroundStyle(selected == i ? .primary : .secondary)
+                                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { textWidths[i] = $0 }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-            }
-            .overlay(alignment: .bottomLeading) {
-                GeometryReader { geo in
-                    let tabWidth = geo.size.width / CGFloat(pages.count)
-                    Color.primary
-                        .frame(width: tabWidth, height: 2)
-                        .clipShape(Capsule())
-                        .offset(x: scrollOffset / CGFloat(pages.count))
+                .overlay(alignment: .bottomLeading) {
+                    GeometryReader { geo in
+                        let tabCellWidth = geo.size.width / CGFloat(pages.count)
+                        let progress = scrollOffset / containerWidth
+                        let leftIdx = max(0, min(pages.count - 2, Int(progress)))
+                        let fraction = progress - CGFloat(leftIdx)
+                        let leftW = textWidths[leftIdx] ?? tabCellWidth
+                        let rightW = textWidths[min(leftIdx + 1, pages.count - 1)] ?? tabCellWidth
+                        let indicatorWidth = leftW + (rightW - leftW) * fraction
+                        let leftCenter = tabCellWidth * CGFloat(leftIdx) + tabCellWidth / 2
+                        let rightCenter = tabCellWidth * CGFloat(leftIdx + 1) + tabCellWidth / 2
+                        let centerX = leftCenter + (rightCenter - leftCenter) * fraction
+                        Color.primary
+                            .frame(width: indicatorWidth, height: 2)
+                            .clipShape(Capsule())
+                            .offset(x: centerX - indicatorWidth / 2)
+                    }
+                    .frame(height: 2)
                 }
-                .frame(height: 2)
+                .padding(.horizontal, 90)
+                Divider()
             }
             .background(.ultraThinMaterial)
-            .overlay(alignment: .bottom) { Divider() }
         }
         .ignoresSafeArea(edges: .bottom)
     }
+    
 }
 
 // MARK: - Home
