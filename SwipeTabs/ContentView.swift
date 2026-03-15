@@ -16,19 +16,46 @@ extension EnvironmentValues {
 // MARK: - Root
 
 struct ContentView: View {
+    @State private var showMenu = false
+    
     var body: some View {
-        TabView {
-            Tab("", systemImage: "house") { HomeView() }
-            Tab("", systemImage: "plus.circle") {
-                NavigationStack {
-                    ScrollView {}.navigationTitle("Menu")
+        ZStack(alignment: .bottom) {
+            TabView {
+                Tab("", systemImage: "house") { HomeView() }
+                Tab("", systemImage: "plus.circle") {}.disabled(true)
+                Tab("", systemImage: "book") {
+                    NavigationStack {
+                        JournalContent().refreshable {}.navigationTitle("Journal")
+                    }
                 }
             }
-            Tab("", systemImage: "book") {
-                NavigationStack {
-                    JournalContent().refreshable {}.navigationTitle("Journal")
-                }
+            
+            HStack(spacing: 0) {
+                Color.clear
+                Button { showMenu = true } label: { Color.clear }
+                Color.clear
             }
+            .frame(height: 83)
+        }
+        .sheet(isPresented: $showMenu) { MenuSheet() }
+    }
+}
+
+// MARK: - Menu Sheet
+
+struct MenuSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            Text("")
+                .navigationTitle("Menu")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { dismiss() } label: { Image(systemName: "xmark") }
+                    }
+                }
         }
     }
 }
@@ -46,7 +73,7 @@ struct SwipePageView<Content: View>: View {
     
     @State private var selected: Int? = 0
     @State private var scrollOffset: CGFloat = 0
-
+    
     var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 0) {
