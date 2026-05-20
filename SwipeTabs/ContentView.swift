@@ -110,33 +110,33 @@ struct SwipePageView<Content: View>: View {
                                 .foregroundStyle(selected == i ? .primary : .secondary)
                                 .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { textWidths[i] = $0 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.bottom, 6)
+                                .padding(.vertical, 6)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .overlay(alignment: .bottomLeading) {
+                .background(alignment: .leading) {
                     GeometryReader { geo in
                         let tabCellWidth = geo.size.width / CGFloat(pages.count)
                         let progress = scrollOffset / containerWidth
                         let leftIdx = max(0, min(pages.count - 2, Int(progress)))
                         let fraction = progress - CGFloat(leftIdx)
-                        let leftW = textWidths[leftIdx] ?? tabCellWidth
-                        let rightW = textWidths[min(leftIdx + 1, pages.count - 1)] ?? tabCellWidth
+                        let leftW = (textWidths[leftIdx] ?? tabCellWidth) + 20
+                        let rightW = (textWidths[min(leftIdx + 1, pages.count - 1)] ?? tabCellWidth) + 20
                         let indicatorWidth = leftW + (rightW - leftW) * fraction
                         let leftCenter = tabCellWidth * CGFloat(leftIdx) + tabCellWidth / 2
                         let rightCenter = tabCellWidth * CGFloat(leftIdx + 1) + tabCellWidth / 2
                         let centerX = leftCenter + (rightCenter - leftCenter) * fraction
-                        Color.primary
-                            .frame(width: indicatorWidth, height: 1.5)
-                            .clipShape(Capsule())
+                        Capsule()
+                            .fill(.clear)
+                            .glassEffect(.regular)
+                            .frame(width: indicatorWidth, height: 30)
                             .offset(x: centerX - indicatorWidth / 2)
                     }
-                    .frame(height: 2)
+                    .frame(height: 30)
                 }
                 .padding(.horizontal, 90)
                 .padding(.top, hasTitle ? 0 : 20)
-                Divider()
             }
             .background(.ultraThinMaterial)
         }
